@@ -15,47 +15,46 @@
 #include <stdlib.h>
 
 
-void print_buf(char *data, int len)
+void print_buf(char *data, int data_length)
 {
-	int i;
-	for (i = 0; i < len; i++) {
-		printf("%02hhx ", data[i]);
-		if ((i+1) % 8 == 0)
+	int data_index;
+	for (data_index = 0; data_index < data_length; data_index++) {
+		//printf("%08hh", data[data_index]);
+		printf("%02hhx ", data[data_index]);
+		if ((data_index+1) % 8 == 0)
 			printf("  ");
-		if ((i+1) % 16 == 0)
+		if ((data_index+1) % 16 == 0)
 			printf("\n");
 	}
 	printf("\n\n");
-
 }
 
 int main(void)
 {
 	TEnumHIDInfo info[128];
-	long count;
-	int i;
-	long handle = -1;
+	long number_of_hid;
+	int hid_index;
+	long hid_device_handle = -1;
 	
-	unsigned res = EnumeratePIE(PI_VID, info, &count);
+	unsigned hid_devices = EnumeratePIE(PI_VID, info, &number_of_hid);
 	
-	for (i = 0; i < count; i++) {
-		TEnumHIDInfo *dev = &info[i];
+	for (hid_index = 0; hid_index < number_of_hid; hid_index++) {
+		TEnumHIDInfo *hid_device = &info[hid_index];
 		printf("Found XKeys Device:\n");
-		printf("\tPID: %04x\n", dev->PID);
-		printf("\tUsage Page: %04x\n", dev->UP);
-		printf("\tUsage:      %04x\n", dev->Usage);
-		printf("\tVersion: %d\n\n", dev->Version);
-
-
-		handle = dev->Handle;
-		unsigned int res = SetupInterfaceEx(handle);
-		if (res != 0) {
-			printf("Unabe to open device. err: %d\n", res);
+		printf("\tPID: %04x\n", hid_device->PID);
+		printf("\tUsage Page: %04x\n", hid_device->UP);
+		printf("\tUsage:      %04x\n", hid_device->Usage);
+		printf("\tVersion: %d\n\n", hid_device->Version);
+		
+		hid_device_handle = hid_device->Handle;
+		unsigned int hid_devices = SetupInterfaceEx(hid_device_handle);
+		if (hid_devices != 0) {
+			printf("Unabe to open device. err: %d\n", hid_devices);
 		}
 		break;
 	}
 	
-	if (handle < 0) {
+	if (hid_device_handle < 0) {
 		printf("Unable to open device\n");
 		exit(1);
 	}
@@ -63,23 +62,23 @@ int main(void)
 	char data[80];
 	while (1) {
 		
-		unsigned int res = 0;
-
-		res  = ReadLast(handle, data);
-		if (res == 0) {
+		unsigned int hid_device_data_chunk = 0;
+		
+		hid_device_data_chunk = ReadLast(hid_device_handle, data);
+		if (hid_device_data_chunk == 0) {
 			printf("LAST: \n");
 			print_buf(data, 33);
 			printf("ENDLAST\n\n");
 		}
-
-		res = 0;
 		
-		while (res == 0) {
-			res = BlockingReadData(handle, data, 20);
-			if (res == 0) {
+		hid_device_data_chunk = 0;
+		
+		while (hid_device_data_chunk == 0) {
+			hid_device_data_chunk = BlockingReadData(hid_device_handle, data, 20);
+			if (hid_device_data_chunk == 0) {
 				print_buf(data, 33);
 			}
-			else if (res == PIE_HID_READ_INSUFFICIENT_DATA) {
+			else if (hid_device_data_chunk == PIE_HID_READ_INSUFFICIENT_DATA) {
 				printf(".");
 				fflush(stdout);
 			}	
@@ -90,16 +89,14 @@ int main(void)
 		
 		printf("Sleeping\n");
 		#if 1
-		if (res != 0) {
-			//usleep(10*1000); // Sleep 10 milliseconds.
-			sleep(2); // 2 seconds
+		if (hid_device_data_chunk != 0) {
+			//usleep(10*1000); //Sleep 10 milliseconds.
+			sleep(1); //seconds
 		}
 		#endif
 		
-		//ClearBuffer(handle);
-		
+		//ClearBuffer(hid_device_handle);
 	}
-
-
+	
 	return 0;
 }
