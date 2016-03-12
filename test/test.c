@@ -32,13 +32,13 @@ void print_buf(char *data, int data_length)
 int main(void)
 {
 	TEnumHIDInfo info[128];
-	long number_of_hid;
+	long number_of_hids;
 	int hid_index;
 	long hid_device_handle = -1;
 	
-	unsigned hid_devices = EnumeratePIE(PI_VID, info, &number_of_hid);
+	unsigned hid_devices = EnumeratePIE(PI_VID, info, &number_of_hids);
 	
-	for (hid_index = 0; hid_index < number_of_hid; hid_index++) {
+	for (hid_index = 0; hid_index < number_of_hids; hid_index++) {
 		TEnumHIDInfo *hid_device = &info[hid_index];
 		printf("Found XKeys Device:\n");
 		printf("\tPID: %04x\n", hid_device->PID);
