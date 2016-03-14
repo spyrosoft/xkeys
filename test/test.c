@@ -33,13 +33,12 @@ int main(void)
 {
 	TEnumHIDInfo info[128];
 	long number_of_hid;
-	int hid_index;
 	long hid_handle = -1;
 	
 	unsigned hids = EnumeratePIE(PI_VID, info, &number_of_hid);
 	
-	for (hid_index = 0; hid_index < number_of_hid; hid_index++) {
-		TEnumHIDInfo *hid = &info[hid_index];
+	if (number_of_hid > 0) {
+		TEnumHIDInfo *hid = &info[0];
 		printf("Found XKeys Device:\n");
 		printf("\tPID: %04x\n", hid->PID);
 		printf("\tUsage Page: %04x\n", hid->UP);
@@ -51,7 +50,6 @@ int main(void)
 		if (hids != 0) {
 			printf("Unabe to open device. err: %d\n", hids);
 		}
-		break;
 	}
 	
 	if (hid_handle < 0) {
